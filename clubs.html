@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Campus Club Portal</title>
+
+<style>
+:root{
+  --purple:#b44cff;
+  --glow:rgba(180,76,255,.7);
+  --green:#4ade80;
+  --red:#f87171;
+}
+*{box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#160033,#000);
+  color:#fff;
+}
+
+/* Navbar */
+nav{
+  display:flex;
+  justify-content:space-between;
+  padding:18px 40px;
+  background:#0b0418;
+  box-shadow:0 0 20px var(--glow);
+}
+.logo{color:var(--purple);font-size:22px;font-weight:bold}
+nav a{color:#ccc;text-decoration:none;margin-left:20px}
+nav a:hover{color:var(--purple)}
+
+/* Header */
+.header{
+  padding:40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.header h1 span{color:var(--purple)}
+.header button{
+  padding:12px 22px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#a855f7,#6d28d9);
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 0 20px var(--glow);
+}
+
+/* Controls */
+.controls{
+  padding:0 40px 30px;
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+}
+.controls input,
+.controls select{
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:#1a0933;
+  color:#fff;
+}
+
+/* Clubs Grid */
+.clubs{
+  padding:0 40px 60px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:25px;
+}
+.club{
+  background:linear-gradient(145deg,#12002a,#070010);
+  padding:22px;
+  border-radius:20px;
+  box-shadow:0 0 20px rgba(180,76,255,.3);
+  transition:transform 0.3s, box-shadow 0.3s;
+}
+.club:hover{
+  transform:translateY(-5px);
+  box-shadow:0 0 30px var(--glow);
+}
+.badge{
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px;
+  display:inline-block;
+  margin-bottom:5px;
+}
+.active{color:var(--green);background:rgba(74,222,128,.2)}
+.inactive{color:var(--red);background:rgba(248,113,113,.2)}
+.club h3{color:var(--purple);margin:10px 0}
+.club p{color:#ccc;font-size:14px}
+.club .category{font-size:12px;color:#bbb;margin-bottom:8px}
+
+/* Actions */
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+.actions button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+.edit{background:#22c55e}
+.delete{background:#ef4444;color:#fff}
+.member{background:#3b82f6;color:#fff}
+
+/* Nested Events */
+.club-events{
+  margin-top:10px;
+  background:#1a0933;
+  padding:10px;
+  border-radius:12px;
+  max-height:120px;
+  overflow-y:auto;
+}
+.club-events h4{margin:0 0 5px 0;font-size:14px;color:#b44cff}
+.club-events p{font-size:12px;margin:2px 0;color:#ccc}
+
+/* Modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:100;
+}
+.modal.active{display:flex}
+.modal-box{
+  background:#0f0720;
+  padding:30px;
+  border-radius:20px;
+  width:380px;
+}
+.modal-box input,
+.modal-box textarea,
+.modal-box select{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#1a0933;
+  color:#fff;
+}
+.modal-box button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#a855f7,#6d28d9);
+  color:#fff;
+}
+.close{background:#333}
+
+/* Sort dropdown */
+.sort{
+  background:#1a0933;color:#fff;border:none;padding:12px;border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <div class="logo">SmartConnectHub</div>
+  <div>
+    <a href="#">Home</a>
+    <a href="#">Clubs</a>
+    <a href="#">Logout</a>
+  </div>
+</nav>
+
+<div class="header">
+  <h1><span>Clubs</span> Portal</h1>
+  <button onclick="openModal()">+ Create Club</button>
+</div>
+
+<div class="controls">
+  <input id="search" placeholder="Search clubs..." oninput="render()">
+  <select id="filter" onchange="render()">
+    <option value="all">All Status</option>
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+  </select>
+  <select id="categoryFilter" onchange="render()">
+    <option value="all">All Categories</option>
+    <option value="Technical">Technical</option>
+    <option value="Cultural">Cultural</option>
+    <option value="Sports">Sports</option>
+  </select>
+  <select id="sort" class="sort" onchange="render()">
+    <option value="name">Sort by Name</option>
+    <option value="status">Sort by Status</option>
+    <option value="members">Sort by Members</option>
+  </select>
+</div>
+
+<div class="clubs" id="clubsList"></div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h2 id="modalTitle">Create Club</h2>
+    <input id="title" placeholder="Club Name">
+    <textarea id="desc" placeholder="Club Description"></textarea>
+    <select id="status">
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <select id="category">
+      <option value="Technical">Technical</option>
+      <option value="Cultural">Cultural</option>
+      <option value="Sports">Sports</option>
+    </select>
+    <button onclick="saveClub()">Save Club</button>
+    <button class="close" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+/* DEFAULT + STORAGE */
+let clubs = JSON.parse(localStorage.getItem("clubs")) || [
+  {title:"Coding Club",desc:"Programming enthusiasts",status:"active",category:"Technical",members:["Alice","Bob"],events:[{title:"Hackathon",date:"2025-12-20"}]},
+  {title:"Music Club",desc:"Singing & instruments",status:"inactive",category:"Cultural",members:["Charlie"],events:[{title:"Concert",date:"2025-12-05"}]},
+  {title:"Drama Club",desc:"Stage performances",status:"active",category:"Cultural",members:["Dave","Eve"],events:[]}
+];
+
+let editIndex=null;
+
+/* SAVE */
+function saveStorage(){localStorage.setItem("clubs",JSON.stringify(clubs))}
+
+/* RENDER */
+function render(){
+  const q=search.value.toLowerCase();
+  const f=filter.value;
+  const cf=categoryFilter.value;
+  const sortBy=sort.value;
+  clubsList.innerHTML="";
+  let sortedClubs=[...clubs];
+
+  // Sorting
+  if(sortBy==="name") sortedClubs.sort((a,b)=>a.title.localeCompare(b.title));
+  else if(sortBy==="status") sortedClubs.sort((a,b)=>a.status.localeCompare(b.status));
+  else if(sortBy==="members") sortedClubs.sort((a,b)=>b.members.length - a.members.length);
+
+  sortedClubs.forEach((c,i)=>{
+    if((f==="all"||c.status===f) && (cf==="all"||c.category===cf) && c.title.toLowerCase().includes(q)){
+      let memberList=c.members.join(", ")||"No members yet";
+      let eventsHTML="";
+      if(c.events.length>0){
+        eventsHTML=c.events.map(ev=>`<p>📅 ${ev.date} - ${ev.title}</p>`).join("");
+      } else {eventsHTML="<p>No events</p>";}
+
+      clubsList.innerHTML+=`
+      <div class="club">
+        <span class="badge ${c.status}">${c.status}</span>
+        <span class="category">${c.category}</span>
+        <h3>${c.title}</h3>
+        <p>${c.desc}</p>
+        <p><strong>Members:</strong> ${memberList}</p>
+        <div class="club-events">
+          <h4>Events:</h4>
+          ${eventsHTML}
+        </div>
+        <div class="actions">
+          <button class="edit" onclick="editClub(${i})">Edit</button>
+          <button class="delete" onclick="deleteClub(${i})">Delete</button>
+        </div>
+      </div>`;
+    }
+  });
+}
+
+/* CREATE & UPDATE */
+function saveClub(){
+  const c={title:title.value,desc:desc.value,status:status.value,category:category.value,members:[],events:[]};
+  editIndex!==null?clubs[editIndex]=c:clubs.push(c);
+  saveStorage();
+  closeModal();
+  render();
+}
+
+/* EDIT */
+function editClub(i){
+  const c=clubs[i];
+  title.value=c.title;
+  desc.value=c.desc;
+  status.value=c.status;
+  category.value=c.category;
+  editIndex=i;
+  modalTitle.innerText="Edit Club";
+  openModal();
+}
+
+/* DELETE */
+function deleteClub(i){
+  if(confirm("Delete this club?")){
+    clubs.splice(i,1);
+    saveStorage();
+    render();
+  }
+}
+
+/* MODAL */
+function openModal(){modal.classList.add("active")}
+function closeModal(){
+  modal.classList.remove("active");
+  title.value=desc.value="";
+  status.value="active";
+  category.value="Technical";
+  editIndex=null;
+  modalTitle.innerText="Create Club";
+}
+
+/* INITIAL LOAD */
+render();
+</script>
+
+</body>
+</html>

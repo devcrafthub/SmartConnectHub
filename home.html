@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Home | Campus Portal</title>
+
+<style>
+:root{
+  --bg:#05010a;
+  --card:#0f0720;
+  --purple:#b44cff;
+  --glow:rgba(180,76,255,.7);
+  --green:#4ade80;
+  --red:#f87171;
+}
+*{
+  box-sizing:border-box;
+  font-family:'Segoe UI',sans-serif;
+}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#160033,#000);
+  color:#fff;
+  scroll-behavior: smooth;
+}
+
+/* ===== Navbar ===== */
+nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 40px;
+  background:#0b0418;
+  box-shadow:0 0 20px var(--glow);
+}
+.logo{
+  font-size:22px;
+  font-weight:bold;
+  color:var(--purple);
+}
+nav ul{
+  list-style:none;
+  display:flex;
+  gap:25px;
+  margin:0;
+}
+nav ul li{
+  cursor:pointer;
+  color:#ccc;
+}
+nav ul li:hover{
+  color:var(--purple);
+}
+
+/* ===== Hero ===== */
+.hero{
+  text-align:center;
+  padding:80px 20px;
+}
+.hero h1{
+  font-size:42px;
+  margin-bottom:15px;
+}
+.hero span{
+  color:var(--purple);
+}
+.hero p{
+  color:#ccc;
+  max-width:600px;
+  margin:auto;
+}
+.hero button{
+  margin-top:30px;
+  padding:14px 35px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#a855f7,#6d28d9);
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+  box-shadow:0 0 25px var(--glow);
+  transition: transform 0.3s;
+}
+.hero button:hover{
+  transform:scale(1.05);
+}
+
+/* ===== Sections ===== */
+.section{
+  padding:60px 40px;
+}
+.section h2{
+  text-align:center;
+  margin-bottom:40px;
+  color:var(--purple);
+}
+
+/* Cards Grid */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:25px;
+}
+.card{
+  background:linear-gradient(145deg,#12002a,#070010);
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 0 20px rgba(180,76,255,.3);
+  transition:.3s;
+}
+.card:hover{
+  transform:translateY(-10px);
+  box-shadow:0 0 35px var(--glow);
+}
+.card h3{
+  margin-bottom:10px;
+  color:var(--purple);
+}
+.card p{
+  color:#bbb;
+  font-size:14px;
+}
+
+/* Event & Club Cards */
+.event-card, .club-card{
+  background:linear-gradient(145deg,#12002a,#070010);
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 0 20px rgba(180,76,255,.3);
+  transition:.3s;
+}
+.event-card:hover, .club-card:hover{
+  transform:translateY(-8px);
+  box-shadow:0 0 30px var(--glow);
+}
+.badge{
+  padding:4px 10px;
+  border-radius:14px;
+  font-size:12px;
+  display:inline-block;
+  margin-bottom:6px;
+}
+.upcoming{color:#b44cff;background:rgba(180,76,255,.2);}
+.live{color:var(--green);background:rgba(74,222,128,.2);}
+.closed{color:#f87171;background:rgba(248,113,113,.2);}
+.category{font-size:12px;color:#bbb;margin-bottom:6px;}
+
+/* Footer */
+footer{
+  text-align:center;
+  padding:25px;
+  background:#0b0418;
+  color:#aaa;
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+  <div class="logo">SmartConnectHub</div>
+  <ul>
+    <li>Home</li>
+    <li>Events</li>
+    <li>Clubs</li>
+    <li>Dashboard</li>
+    <li>Logout</li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>Welcome to<br> <span>Smart Connect Hub</span></h1>
+  <p>Your all-in-one platform to manage college events, clubs, and student activities seamlessly.</p>
+  <button onclick="scrollToEvents()">Explore Events & Clubs</button>
+</section>
+
+<!-- Features -->
+<section class="section">
+  <h2>Platform Features</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>🎉 Events</h3>
+      <p>Create, manage, and participate in campus events easily.</p>
+    </div>
+    <div class="card">
+      <h3>👥 Clubs</h3>
+      <p>Join student clubs, manage members, and track activities.</p>
+    </div>
+    <div class="card">
+      <h3>📊 Dashboard</h3>
+      <p>Personalized dashboard for students, admins, and faculty.</p>
+    </div>
+    <div class="card">
+      <h3>🔐 Secure Access</h3>
+      <p>Role-based authentication with OTP and session security.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Events Preview -->
+<section class="section" id="eventsSection">
+  <h2>Upcoming Events</h2>
+  <div class="cards" id="eventsList">
+    <!-- Event cards will be rendered here -->
+  </div>
+</section>
+
+<!-- Clubs Preview -->
+<section class="section" id="clubsSection">
+  <h2>Active Clubs</h2>
+  <div class="cards" id="clubsList">
+    <!-- Club cards will be rendered here -->
+  </div>
+</section>
+
+<footer>
+  © 2025 Smart Connect Hub Portal
+</footer>
+
+<script>
+/* Sample Events Data */
+const events = [
+  {title:"AI & ML Workshop",desc:"Hands-on AI & ML training",date:"2025-10-20",status:"upcoming"},
+  {title:"24Hr Hackathon",desc:"Team coding challenge",date:"2025-10-13",status:"live"},
+  {title:"Cultural Fest",desc:"Music, dance & drama",date:"2025-10-05",status:"closed"}
+];
+
+/* Sample Clubs Data */
+const clubs = [
+  {title:"Coding Club",desc:"Programming enthusiasts",status:"active",category:"Technical"},
+  {title:"Music Club",desc:"Singing & instruments",status:"inactive",category:"Cultural"},
+  {title:"Drama Club",desc:"Stage performances",status:"active",category:"Cultural"}
+];
+
+/* Render Event Cards */
+function renderEvents(){
+  const container = document.getElementById('eventsList');
+  container.innerHTML = "";
+  events.forEach(e=>{
+    container.innerHTML += `
+      <div class="event-card">
+        <span class="badge ${e.status}">${e.status}</span>
+        <h3>${e.title}</h3>
+        <p>${e.desc}</p>
+        <p>📅 ${e.date}</p>
+      </div>`;
+  });
+}
+
+/* Render Club Cards */
+function renderClubs(){
+  const container = document.getElementById('clubsList');
+  container.innerHTML = "";
+  clubs.forEach(c=>{
+    container.innerHTML += `
+      <div class="club-card">
+        <span class="badge ${c.status==='active'?'active':'inactive'}">${c.status}</span>
+        <span class="category">${c.category}</span>
+        <h3>${c.title}</h3>
+        <p>${c.desc}</p>
+      </div>`;
+  });
+}
+
+/* Scroll to Events */
+function scrollToEvents(){
+  document.getElementById('eventsSection').scrollIntoView({behavior:'smooth'});
+}
+
+/* Initial Render */
+renderEvents();
+renderClubs();
+</script>
+
+</body>
+</html>

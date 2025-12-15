@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Events Management</title>
+
+<style>
+:root{
+  --purple:#b44cff;
+  --glow:rgba(180,76,255,.7);
+}
+*{box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#160033,#000);
+  color:#fff;
+}
+
+/* Navbar */
+nav{
+  display:flex;
+  justify-content:space-between;
+  padding:18px 40px;
+  background:#0b0418;
+  box-shadow:0 0 20px var(--glow);
+}
+.logo{color:var(--purple);font-size:22px;font-weight:bold}
+nav a{color:#ccc;text-decoration:none;margin-left:20px}
+nav a:hover{color:var(--purple)}
+
+/* Header */
+.header{
+  padding:40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.header h1 span{color:var(--purple)}
+.header button{
+  padding:12px 22px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#a855f7,#6d28d9);
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 0 20px var(--glow);
+}
+
+/* Search & Filter */
+.controls{
+  padding:0 40px 30px;
+  display:flex;
+  gap:15px;
+}
+.controls input,
+.controls select{
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:#1a0933;
+  color:#fff;
+}
+
+/* Events Grid */
+.events{
+  padding:0 40px 60px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:25px;
+}
+.event{
+  background:linear-gradient(145deg,#12002a,#070010);
+  padding:22px;
+  border-radius:20px;
+  box-shadow:0 0 20px rgba(180,76,255,.3);
+}
+.badge{
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px;
+  display:inline-block;
+}
+.upcoming{color:#b44cff;background:rgba(180,76,255,.2)}
+.live{color:#4ade80;background:rgba(74,222,128,.2)}
+.closed{color:#f87171;background:rgba(248,113,113,.2)}
+.event h3{color:var(--purple);margin:10px 0}
+.event p{color:#ccc;font-size:14px}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+.actions button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+.edit{background:#22c55e}
+.delete{background:#ef4444;color:#fff}
+
+/* Modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+.modal.active{display:flex}
+.modal-box{
+  background:#0f0720;
+  padding:30px;
+  border-radius:20px;
+  width:360px;
+}
+.modal-box input,
+.modal-box textarea,
+.modal-box select{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#1a0933;
+  color:#fff;
+}
+.modal-box button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#a855f7,#6d28d9);
+  color:#fff;
+}
+.close{background:#333}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <div class="logo">CampusConnect</div>
+  <div>
+    <a href="#">Home</a>
+    <a href="#">Events</a>
+    <a href="#">Logout</a>
+  </div>
+</nav>
+
+<div class="header">
+  <h1><span>Events</span> Management</h1>
+  <button onclick="openModal()">+ Create Event</button>
+</div>
+
+<div class="controls">
+  <input id="search" placeholder="Search events..." oninput="render()">
+  <select id="filter" onchange="render()">
+    <option value="all">All</option>
+    <option value="upcoming">Upcoming</option>
+    <option value="live">Live</option>
+    <option value="closed">Closed</option>
+  </select>
+</div>
+
+<div class="events" id="eventsList"></div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h2 id="modalTitle">Create Event</h2>
+    <input id="title" placeholder="Event Title">
+    <textarea id="desc" placeholder="Event Description"></textarea>
+    <input id="date" type="date">
+    <select id="status">
+      <option value="upcoming">Upcoming</option>
+      <option value="live">Live</option>
+      <option value="closed">Closed</option>
+    </select>
+    <button onclick="saveEvent()">Save Event</button>
+    <button class="close" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+/* DEFAULT + STORAGE */
+let events = JSON.parse(localStorage.getItem("events")) || [
+  {title:"AI & ML Workshop",desc:"Hands-on AI & ML training",date:"2025-10-20",status:"upcoming"},
+  {title:"24Hr Hackathon",desc:"Team coding challenge",date:"2025-10-13",status:"live"},
+  {title:"Cultural Fest",desc:"Music, dance & drama",date:"2025-10-05",status:"closed"}
+];
+
+let editIndex=null;
+
+/* SAVE */
+function saveStorage(){
+  localStorage.setItem("events",JSON.stringify(events));
+}
+
+/* READ */
+function render(){
+  const q=search.value.toLowerCase();
+  const f=filter.value;
+  eventsList.innerHTML="";
+  events.forEach((e,i)=>{
+    if((f==="all"||e.status===f)&&e.title.toLowerCase().includes(q)){
+      eventsList.innerHTML+=`
+      <div class="event">
+        <span class="badge ${e.status}">${e.status}</span>
+        <h3>${e.title}</h3>
+        <p>${e.desc}</p>
+        <p>📅 ${e.date}</p>
+        <div class="actions">
+          <button class="edit" onclick="editEvent(${i})">Edit</button>
+          <button class="delete" onclick="deleteEvent(${i})">Delete</button>
+        </div>
+      </div>`;
+    }
+  });
+}
+
+/* CREATE & UPDATE */
+function saveEvent(){
+  const e={title:title.value,desc:desc.value,date:date.value,status:status.value};
+  editIndex!==null?events[editIndex]=e:events.push(e);
+  saveStorage();
+  closeModal();
+  render();
+}
+
+/* EDIT */
+function editEvent(i){
+  const e=events[i];
+  title.value=e.title;
+  desc.value=e.desc;
+  date.value=e.date;
+  status.value=e.status;
+  editIndex=i;
+  modalTitle.innerText="Edit Event";
+  openModal();
+}
+
+/* DELETE */
+function deleteEvent(i){
+  if(confirm("Delete this event?")){
+    events.splice(i,1);
+    saveStorage();
+    render();
+  }
+}
+
+/* MODAL */
+function openModal(){modal.classList.add("active")}
+function closeModal(){
+  modal.classList.remove("active");
+  title.value=desc.value=date.value="";
+  status.value="upcoming";
+  editIndex=null;
+  modalTitle.innerText="Create Event";
+}
+
+/* INITIAL LOAD */
+render();
+</script>
+
+</body>
+</html>
